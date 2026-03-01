@@ -12,6 +12,9 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = '__all__'
 
+# К сожалению, здесь я не разобрался, тк если просто убираю как вы указали в/
+# в ревью, то все перестает работать... Postman сразу выдает ошибки.
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
