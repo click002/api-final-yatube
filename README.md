@@ -1,156 +1,230 @@
-# API для Yatube
+# Yatube API
 
-REST API для социальной сети Yatube. Позволяет создавать посты, комментировать их, подписываться на авторов и многое другое.
+**REST API для социальной сети блогов Yatube**
 
+Yatube API предоставляет разработчикам возможность интегрироваться с платформой Yatube, автоматизировать задачи и создавать собственные клиенты.
 
+---
 
-## Как установить и запустить
+## Основные функции
 
-### 1. Клонируйте репозиторий
+- **Управление постами**: создание, чтение, обновление и удаление публикаций.
+- **Комментирование**: возможность оставлять комментарии к постам и управлять ими.
+- **Сообщества (группы)**: просмотр списка сообществ и информации о них.
+- **Подписки (follow)**: подписка на других авторов, просмотр своих подписок и поиск по ним.
+- **Аутентификация**: безопасный доступ к API с помощью JWT-токенов.
 
-git clone <ссылка_на_ваш_репозиторий>
-cd api_final_yatube
-2. Создайте виртуальное окружение и активируйте его
-bash
-Для Windows
-python -m venv venv
-venv\Scripts\activate
+---
 
-Для Mac/Linux
-python3 -m venv venv
-source venv/bin/activate
-### 3. Установите зависимости
-bash
-pip install -r requirements.txt
-### 4. Выполните миграции и создайте суперпользователя
-bash
-python manage.py migrate
-python manage.py createsuperuser   # введите имя и пароль
-### 5. Запустите сервер
-bash
-python manage.py runserver
-Сервер запустится по адресу: http://127.0.0.1:8000/
+## Технологический стек
 
-# Как пользоваться API (через Postman)
-Все запросы отправляются на http://127.0.0.1:8000/api/v1/...
+- Python 3.9+
+- Django 3.2
+- Django REST Framework
+- Djoser & Simple JWT
+- SQLite
 
-### 1. Получите токен доступа
-Запрос:
+---
 
-Метод: POST
+## Установка и запуск
 
-URL: http://127.0.0.1:8000/api/v1/jwt/create/
+1. **Клонируйте репозиторий** (или скопируйте файлы проекта).
 
-Body: выберите raw и формат JSON
+2. **Создайте и активируйте виртуальное окружение**:
 
-Вставьте:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate      # для Linux/Mac
+   venv\Scripts\activate          # для Windows
+   ```
 
-json
+3. **Установите зависимости**:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Выполните миграции**:
+
+   ```bash
+   python manage.py migrate
+   ```
+
+5. **Создайте суперпользователя** (для доступа в админку и тестирования):
+
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+6. **Запустите сервер**:
+
+   ```bash
+   python manage.py runserver
+   ```
+
+Сервер запустится по адресу: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+
+---
+
+## Примеры использования API
+
+**Базовый URL:** `http://127.0.0.1:8000/api/v1/`
+
+### Получение токена
+
+**Запрос:**  
+`POST /jwt/create/`
+
+```json
 {
     "username": "admin",
-    "password": "пароль_который_ввели_при_createsuperuser"
+    "password": "ваш_пароль"
 }
-Ответ: вы получите два токена - access и refresh. Скопируйте access токен - он понадобится для следующих запросов.
+```
 
-### 2. Создайте новый пост
-Запрос:
+**Ответ:**
 
-Метод: POST
+```json
+{
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
 
-URL: http://127.0.0.1:8000/api/v1/posts/
+### Создание поста
 
-Headers: добавьте строку
+**Запрос:**  
+`POST /posts/`  
+**Headers:**  
+`Authorization: Bearer <ваш_access_токен>`
 
-text
-Authorization: Bearer ваш_access_токен
-Body: raw → JSON
-
-json
+```json
 {
     "text": "Мой первый пост!"
 }
-Ответ: вы увидите созданный пост с его id, датой публикации и вашим именем автора.
+```
 
-### 3. Посмотрите все посты
-Запрос:
+**Ответ:**
 
-Метод: GET
-
-URL: http://127.0.0.1:8000/api/v1/posts/
-
-Токен не нужен - посты может читать кто угодно.
-
-### 4. Измените свой пост
-Запрос:
-
-Метод: PATCH
-
-URL: http://127.0.0.1:8000/api/v1/posts/1/ (где 1 - id поста)
-
-Headers: Authorization: Bearer ваш_access_токен
-
-Body:
-
-json
+```json
 {
-    "text": "Обновленный текст поста"
+    "id": 1,
+    "author": "admin",
+    "text": "Мой первый пост!",
+    "pub_date": "2024-03-01T12:00:00Z",
+    "image": null,
+    "group": null
 }
-### 5. Добавьте комментарий к посту
-Запрос:
+```
 
-Метод: POST
+### Получение списка постов
 
-URL: http://127.0.0.1:8000/api/v1/posts/1/comments/
+**Запрос:**  
+`GET /posts/?limit=2&offset=0`
 
-Headers: Authorization: Bearer ваш_access_токен
+**Ответ:**
 
-Body:
+```json
+{
+    "count": 5,
+    "next": "http://127.0.0.1:8000/api/v1/posts/?limit=2&offset=2",
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "author": "admin",
+            "text": "Мой первый пост!",
+            "pub_date": "2024-03-01T12:00:00Z",
+            "image": null,
+            "group": null
+        }
+    ]
+}
+```
 
-json
+### Добавление комментария
+
+**Запрос:**  
+`POST /posts/1/comments/`  
+**Headers:**  
+`Authorization: Bearer <ваш_access_токен>`
+
+```json
 {
     "text": "Отличный пост!"
 }
-### 6. Подпишитесь на другого пользователя
-Сначала создайте еще одного пользователя через админку или командой:
+```
 
-bash
-python manage.py shell
-from django.contrib.auth.models import User
-User.objects.create_user('petr', 'petr@test.com', 'pass123')
-Запрос на подписку:
+**Ответ:**
 
-Метод: POST
-
-URL: http://127.0.0.1:8000/api/v1/follow/
-
-Headers: Authorization: Bearer ваш_access_токен
-
-Body:
-
-json
+```json
 {
-    "following": "petr"
+    "id": 1,
+    "author": "admin",
+    "text": "Отличный пост!",
+    "created": "2024-03-01T12:05:00Z",
+    "post": 1
 }
-### 7. Посмотрите на кого вы подписаны
-Запрос:
+```
 
-Метод: GET
+### Подписка на пользователя
 
-URL: http://127.0.0.1:8000/api/v1/follow/
+**Запрос:**  
+`POST /follow/`  
+**Headers:**  
+`Authorization: Bearer <ваш_access_токен>`
 
-Headers: Authorization: Bearer ваш_access_токен
+```json
+{
+    "following": "parker"
+}
+```
 
-Документация
-После запуска сервера полная документация доступна по адресу:
-http://127.0.0.1:8000/redoc/
+**Ответ:**
 
-Там описаны все возможные запросы, форматы данных и коды ответов.
+```json
+{
+    "user": "admin",
+    "following": "parker"
+}
+```
 
-Важно!
-Access токен живет 24 часа. Когда истечет, получите новый через тот же /jwt/create/
+### Просмотр подписок
 
-Чужие посты можно читать, но нельзя изменять или удалять
+**Запрос:**  
+`GET /follow/`  
+**Headers:**  
+`Authorization: Bearer <ваш_access_токен>`
 
-Нельзя подписаться на самого себя
+**Ответ:**
 
-Если что-то не работает - проверьте, что сервер запущен и токен передан правильно
+```json
+[
+    {
+        "user": "admin",
+        "following": "parker"
+    }
+]
+```
+
+---
+
+## Документация
+
+Подробная документация (ReDoc) доступна по адресу:  
+[http://127.0.0.1:8000/redoc/](http://127.0.0.1:8000/redoc/)
+
+---
+
+## Важно
+
+- **Access токен** живёт **24 часа**.
+- **Чужие посты** можно только читать (редактирование/удаление недоступно).
+- Нельзя подписаться **на самого себя**.
+
+---
+
+## Автор
+
+**Nikita F.**  
+GitHub: @click002
