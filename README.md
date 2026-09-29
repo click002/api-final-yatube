@@ -226,5 +226,5 @@ Yatube API предоставляет разработчикам возможн�
 
 ## Автор
 
-**Nikita F.**  
-GitHub: @click002
+**Nikita Filin.**  
+GitHub: [@click002](https://github.com/click002)
